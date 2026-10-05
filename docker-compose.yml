@@ -1,0 +1,82 @@
+name: litellm_proxy
+
+x-proxy-environment: &proxy-environment
+  HTTP_PROXY: ${OUTBOUND_PROXY_URL:?Set OUTBOUND_PROXY_URL in .env}
+  HTTPS_PROXY: ${OUTBOUND_PROXY_URL:?Set OUTBOUND_PROXY_URL in .env}
+  http_proxy: ${OUTBOUND_PROXY_URL:?Set OUTBOUND_PROXY_URL in .env}
+  https_proxy: ${OUTBOUND_PROXY_URL:?Set OUTBOUND_PROXY_URL in .env}
+  NO_PROXY: localhost,127.0.0.1,::1,${LOCAL_AI_IP:?Set LOCAL_AI_IP in .env},litellm,redis_litellm,db_litellm
+  no_proxy: localhost,127.0.0.1,::1,${LOCAL_AI_IP:?Set LOCAL_AI_IP in .env},litellm,redis_litellm,db_litellm
+
+services:
+  litellm:
+    image: ${LITELLM_IMAGE:-ghcr.io/berriai/litellm:v1.103.2}
+    restart: unless-stopped
+    init: true
+    command: ["--config", "/app/config.yaml", "--host", "0.0.0.0", "--port", "4000", "--num_workers", "1", "--enforce_prisma_migration_check"]
+    ports:
+      - "${LITELLM_BIND_IP:-127.0.0.1}:${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml:ro
+      - ./sync_models.py:/opt/setup/sync_models.py:ro
+      - ./models.json:/opt/setup/models.json:ro
+    environment:
+      <<: *proxy-environment
+      DATABASE_URL: postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@db_litellm:5432/${POSTGRES_DB:?Set POSTGRES_DB}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Set LITELLM_MASTER_KEY}
+      LITELLM_SALT_KEY: ${LITELLM_SALT_KEY:?Set permanent LITELLM_SALT_KEY}
+      STORE_MODEL_IN_DB: "True"
+      GEMINI_KEY_PROJ_1: ${GEMINI_KEY_PROJ_1:?Set GEMINI_KEY_PROJ_1}
+      GEMINI_KEY_PROJ_2: ${GEMINI_KEY_PROJ_2:?Set GEMINI_KEY_PROJ_2}
+      GEMINI_KEY_PROJ_3: ${GEMINI_KEY_PROJ_3:?Set GEMINI_KEY_PROJ_3}
+      LOCAL_AI_IP: ${LOCAL_AI_IP:?Set LOCAL_AI_IP in .env}
+      DISABLE_AIOHTTP_TRANSPORT: "True"
+      LITELLM_LOG: INFO
+      UI_USERNAME: ${UI_USERNAME:-admin}
+      UI_PASSWORD: ${UI_PASSWORD:?Set UI_PASSWORD}
+      SERVER_ROOT_PATH: ${SERVER_ROOT_PATH}
+    depends_on:
+      db_litellm:
+        condition: service_healthy
+      redis_litellm:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; c=urllib.request.build_opener(urllib.request.ProxyHandler({})); c.open('http://127.0.0.1:4000/health/readiness', timeout=5).close()"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  redis_litellm:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1", "--maxmemory", "512mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - ./redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+  db_litellm:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *logging

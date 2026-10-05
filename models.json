@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "quota_source": "?????? ??????? ??? ?????? ???????; ????????? ???????? ??? ?????? ????????.",
+  "cloud_models": [
+    {
+      "name": "gemini-3.5-flash-lite",
+      "provider_model": "gemini/gemini-3.5-flash-lite",
+      "google_rpm": 15,
+      "google_tpm": 250000,
+      "google_rpd": 500,
+      "router_rpm": 13,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3.8-flash",
+      "provider_model": "gemini/gemini-3.8-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3.7-flash",
+      "provider_model": "gemini/gemini-3.7-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3.6-flash",
+      "provider_model": "gemini/gemini-3.6-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3.5-flash",
+      "provider_model": "gemini/gemini-3.5-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3-flash",
+      "provider_model": "gemini/gemini-3-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-2.5-flash",
+      "provider_model": "gemini/gemini-2.5-flash",
+      "google_rpm": 5,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 4,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-3.1-flash-lite",
+      "provider_model": "gemini/gemini-3.1-flash-lite",
+      "google_rpm": 15,
+      "google_tpm": 250000,
+      "google_rpd": 500,
+      "router_rpm": 13,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemini-2.5-flash-lite",
+      "provider_model": "gemini/gemini-2.5-flash-lite",
+      "google_rpm": 10,
+      "google_tpm": 250000,
+      "google_rpd": 20,
+      "router_rpm": 8,
+      "router_tpm": 225000
+    },
+    {
+      "name": "gemma-4-31b",
+      "provider_model": "gemini/gemma-4-31b-it",
+      "google_rpm": 30,
+      "google_tpm": 16000,
+      "google_rpd": 14400,
+      "router_rpm": 25,
+      "router_tpm": 15000
+    },
+    {
+      "name": "gemma-4-26b",
+      "provider_model": "gemini/gemma-4-26b-a4b-it",
+      "google_rpm": 30,
+      "google_tpm": 16000,
+      "google_rpd": 14400,
+      "router_rpm": 25,
+      "router_tpm": 15000
+    }
+  ],
+  "local_models": [
+    {
+      "name": "local-gemma-4",
+      "provider_model": "openai/gemma-4",
+      "port": 8003,
+      "mode": "chat",
+      "timeout": 400,
+      "max_input_tokens": 16384,
+      "max_output_tokens": 4096,
+      "description": "Локальная Gemma 4, llama.cpp; без облачных fallback."
+    },
+    {
+      "name": "local-gemma-4-e4b",
+      "provider_model": "openai/gemma-4-e4b",
+      "port": 8004,
+      "mode": "chat",
+      "timeout": 120,
+      "max_input_tokens": 8192,
+      "max_output_tokens": 4096,
+      "description": "Локальная Gemma 4 E4B; без облачных fallback."
+    },
+    {
+      "name": "local-bge-m3",
+      "provider_model": "openai/BAAI/bge-m3",
+      "port": 7997,
+      "api_base_path": "",
+      "mode": "embedding",
+      "timeout": 60,
+      "description": "Локальные эмбеддинги Infinity через OpenAI-compatible API."
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# Environment and local deployment settings
+.env
+.env.*
+!.env.example
+.envrc
+*.env
+*.local.*
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+nginx/*.conf
+
+# Credentials and certificates
+secrets/
+.secrets/
+credentials/
+.aws/
+.ssh/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+service-account*.json
+*credentials*.json
+
+# Persistent service data, backups and logs
+/pg_data/
+/redis_data/
+/backups/
+/dumps/
+/logs/
+*.log
+*.dump
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+
+# Python tooling and generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor, OS and local code index
+.vscode/
+.idea/
+.codegraph/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

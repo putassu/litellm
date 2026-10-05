@@ -1,0 +1,71 @@
+# Router policy is owned by this file. Models stay in the database/API/UI.
+# Each cloud model has three deployments with order: 1, 2, 3.
+# No repeat of the same failed deployment: order/fallback handles failover.
+# 86400 seconds is a rolling 24-hour cooldown, not Google's daily reset time.
+# Local models override cooldown to 30 seconds; they have no cloud fallbacks.
+# RPD is not a native daily counter here: upstream Google enforces its quota.
+# Single-next links form one acyclic cloud chain. No implicit default model:
+# clients explicitly select gemini-3.5-flash-lite to enter from the start.
+# Keep response caching disabled. Redis below stores routing state, not answers.
+litellm_settings:
+  drop_params: true
+  force_ipv4: false
+  cache: false
+  json_logs: true
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  store_model_in_db: true
+  cancel_on_disconnect: true
+  background_health_checks: false
+  store_prompts_in_spend_logs: true
+  disable_master_key_return: true
+  maximum_spend_logs_retention_period: 7d
+  maximum_spend_logs_retention_interval: 1d
+  database_connection_pool_limit: 20
+router_settings:
+  # Сначала отбирается доступный минимальный order. Shuffle работает только
+  # среди deployments одного уровня order; здесь на уровне один проект.
+  routing_strategy: simple-shuffle
+  redis_host: redis_litellm
+  redis_port: 6379
+  redis_db: 0
+  enable_pre_call_checks: true
+  timeout: 180
+  stream_timeout: 120
+  num_retries: 0
+  max_fallbacks: 40
+  cooldown_time: 86400
+  allowed_fails_policy:
+    RateLimitErrorAllowedFails: 0
+    TimeoutErrorAllowedFails: 3
+    InternalServerErrorAllowedFails: 3
+    ServiceUnavailableErrorAllowedFails: 3
+  retry_policy:
+    RateLimitErrorRetries: 0
+    TimeoutErrorRetries: 0
+    InternalServerErrorRetries: 0
+    ServiceUnavailableErrorRetries: 0
+    AuthenticationErrorRetries: 0
+    BadRequestErrorRetries: 0
+    NotFoundErrorRetries: 0
+  fallbacks:
+  - gemini-3.5-flash-lite:
+    - gemini-3.8-flash
+  - gemini-3.8-flash:
+    - gemini-3.7-flash
+  - gemini-3.7-flash:
+    - gemini-3.6-flash
+  - gemini-3.6-flash:
+    - gemini-3.5-flash
+  - gemini-3.5-flash:
+    - gemini-3-flash
+  - gemini-3-flash:
+    - gemini-2.5-flash
+  - gemini-2.5-flash:
+    - gemini-3.1-flash-lite
+  - gemini-3.1-flash-lite:
+    - gemini-2.5-flash-lite
+  - gemini-2.5-flash-lite:
+    - gemma-4-31b
+  - gemma-4-31b:
+    - gemma-4-26b
